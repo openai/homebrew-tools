@@ -4,22 +4,22 @@ cask "openai" do
 
   on_macos do
     on_intel do
-      sha256 "6480d05170f73f5f64fff9511b932324515c1074d1eccd0a5c2a84a74d530712"
+      sha256 "77eeb6d1fa2cc46146a95d1b524b4a2671889b339e5d86b74564278e33767c41"
       url "https://github.com/openai/openai-cli/releases/download/v#{version}/openai_#{version}_macos_amd64.zip"
     end
     on_arm do
-      sha256 "9f71e06949b231ec3528d1e5c7719e2c5297f955b8e6b6ffe454edaabd9fa92d"
+      sha256 "463d2bc7b925ff883dd2dfa9e92ca2b9b2008f5087fe932d7d1ad1b7a5b19936"
       url "https://github.com/openai/openai-cli/releases/download/v#{version}/openai_#{version}_macos_arm64.zip"
     end
   end
 
   on_linux do
     on_intel do
-      sha256 "36a752a8a639441ccbe11955bad8c2dc673436564bd3146d13279807315c7dc4"
+      sha256 "55efaa17e856b9a89922c5b5b3f2ebf236b91f65e75f980a787fe8d946546dbb"
       url "https://github.com/openai/openai-cli/releases/download/v#{version}/openai_#{version}_linux_amd64.tar.gz"
     end
     on_arm do
-      sha256 "ea43293445adeb064647d1b9900a448da7ed0b19bda231661b270967938deac2"
+      sha256 "3bb48d4c482ab25583376bed87ac251e5d788e098b1572e7c1d34bca8714eb60"
       url "https://github.com/openai/openai-cli/releases/download/v#{version}/openai_#{version}_linux_arm64.tar.gz"
     end
   end
