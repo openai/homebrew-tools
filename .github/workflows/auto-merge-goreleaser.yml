@@ -7,11 +7,7 @@ on:
     types:
       - completed
 
-permissions:
-  actions: read
-  checks: read
-  contents: write
-  pull-requests: write
+permissions: {}
 
 concurrency:
   group: goreleaser-automerge-${{ github.event.workflow_run.head_branch }}
@@ -24,6 +20,11 @@ jobs:
       github.event.workflow_run.conclusion == 'success' &&
       github.event.workflow_run.event == 'pull_request'
     runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      checks: read
+      contents: read
+      pull-requests: read
     outputs:
       pr-number: ${{ steps.verify.outputs.pr-number }}
 
@@ -86,6 +87,8 @@ jobs:
     needs: verify
     runs-on: ubuntu-latest
     environment: goreleaser-automerge
+    permissions:
+      contents: read
 
     steps:
       - name: Create GoReleaser app token
