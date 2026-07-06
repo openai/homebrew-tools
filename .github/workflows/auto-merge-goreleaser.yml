@@ -1,9 +1,9 @@
-name: Auto-merge GoReleaser cask PRs
+name: Auto-merge GoReleaser Homebrew PRs
 
 on:
   workflow_run:
     workflows:
-      - Validate cask
+      - Validate Homebrew recipes
     types:
       - completed
 
@@ -29,7 +29,7 @@ jobs:
       pr-number: ${{ steps.verify.outputs.pr-number }}
 
     steps:
-      - name: Verify PR is an eligible GoReleaser cask update
+      - name: Verify PR is an eligible GoReleaser recipe update
         id: verify
         env:
           GH_TOKEN: ${{ github.token }}
@@ -45,36 +45,50 @@ jobs:
             exit 1
           fi
 
+          case "${VALIDATED_HEAD_BRANCH}" in
+            openai-*) expected_path="Casks/openai.rb" ;;
+            orchard-*) expected_path="Formula/orchard.rb" ;;
+            softnet-*) expected_path="Formula/softnet.rb" ;;
+            tart-guest-agent-*) expected_path="Formula/tart-guest-agent.rb" ;;
+            tart-*) expected_path="Formula/tart.rb" ;;
+            *)
+              echo "Unexpected GoReleaser branch: ${VALIDATED_HEAD_BRANCH}"
+              exit 1
+              ;;
+          esac
+
           data="$(gh pr view "${PR_NUMBER}" --repo "${REPO}" \
             --json author,baseRefName,body,files,headRefName,headRefOid,headRepositoryOwner,isCrossRepository,isDraft,state,statusCheckRollup)"
 
           echo "${data}" | jq -e \
             --arg sha "${VALIDATED_SHA}" \
             --arg head_branch "${VALIDATED_HEAD_BRANCH}" \
+            --arg expected_path "${expected_path}" \
             '
               .state == "OPEN" and
               .isDraft == false and
               .author.login == "app/openai-homebrew-releaser" and
               .baseRefName == "main" and
               .headRefName == $head_branch and
-              (.headRefName | test("^openai-[0-9]+\\.[0-9]+\\.[0-9]+$")) and
+              (.headRefName | test("^(openai|orchard|softnet|tart|tart-guest-agent)-[0-9]+\\.[0-9]+\\.[0-9]+$")) and
               .headRefOid == $sha and
               .headRepositoryOwner.login == "openai" and
               .isCrossRepository == false and
               ((.body // "") | contains("Automated with [GoReleaser]")) and
               (.files | length == 1) and
-              (.files[0].path == "Casks/openai.rb") and
+              (.files[0].path == $expected_path) and
+              ((.files[0].changeType == "ADDED") or (.files[0].changeType == "MODIFIED")) and
               any(.statusCheckRollup[]?;
                 .__typename == "CheckRun" and
-                .workflowName == "Validate cask" and
-                .name == "validate-cask" and
+                .workflowName == "Validate Homebrew recipes" and
+                .name == "validate-homebrew" and
                 .status == "COMPLETED" and
                 .conclusion == "SUCCESS"
               )
             '
 
           changed_files="$(gh pr diff "${PR_NUMBER}" --repo "${REPO}" --name-only)"
-          if [ "${changed_files}" != "Casks/openai.rb" ]; then
+          if [ "${changed_files}" != "${expected_path}" ]; then
             echo "Unexpected changed files:"
             printf '%s\n' "${changed_files}"
             exit 1
