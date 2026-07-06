@@ -1,4 +1,4 @@
-name: Validate Homebrew recipes
+name: Validate cask
 
 on:
   pull_request:
@@ -12,8 +12,8 @@ permissions:
   contents: read
 
 jobs:
-  validate-homebrew:
-    name: validate-homebrew
+  validate-cask:
+    name: validate-cask
     runs-on: macos-latest
 
     steps:

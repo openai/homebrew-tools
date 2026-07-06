@@ -3,7 +3,7 @@ name: Auto-merge GoReleaser Homebrew PRs
 on:
   workflow_run:
     workflows:
-      - Validate Homebrew recipes
+      - Validate cask
     types:
       - completed
 
@@ -80,8 +80,8 @@ jobs:
               ((.files[0].changeType == "ADDED") or (.files[0].changeType == "MODIFIED")) and
               any(.statusCheckRollup[]?;
                 .__typename == "CheckRun" and
-                .workflowName == "Validate Homebrew recipes" and
-                .name == "validate-homebrew" and
+                .workflowName == "Validate cask" and
+                .name == "validate-cask" and
                 .status == "COMPLETED" and
                 .conclusion == "SUCCESS"
               )
