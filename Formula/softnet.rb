@@ -5,11 +5,11 @@
 class Softnet < Formula
   desc "Software networking with isolation for Tart"
   homepage "https://github.com/openai/softnet"
-  version "0.20.1"
+  version "0.22.1"
   depends_on :macos
 
-  url "https://github.com/openai/softnet/releases/download/0.20.1/softnet.tar.gz"
-  sha256 "4a94100aac9bc83b5527af923217ab615321a5322425484c4342947a6ae00214"
+  url "https://github.com/openai/softnet/releases/download/0.22.1/softnet.tar.gz"
+  sha256 "1093be6f77b0c7a75b31cf651ff46844a81d73568184e807494f555280684644"
 
   define_method(:install) do
     bin.install "softnet"
