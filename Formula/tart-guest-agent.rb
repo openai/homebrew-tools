@@ -5,12 +5,12 @@
 class TartGuestAgent < Formula
   desc "Guest agent for Tart VMs"
   homepage "https://github.com/openai/tart-guest-agent"
-  version "0.13.0"
+  version "0.13.1"
   license "FSL-1.1-Apache-2.0"
 
   on_macos do
-    url "https://github.com/openai/tart-guest-agent/releases/download/v0.13.0/tart-guest-agent-darwin-all.tar.gz"
-    sha256 "ee0ef7bd44c19dbf65d3767f540a57f5e83034ecab52ddf7108898e45f15f2c2"
+    url "https://github.com/openai/tart-guest-agent/releases/download/v0.13.1/tart-guest-agent-darwin-all.tar.gz"
+    sha256 "2cb74efb130bdc000a6bade9f1da1a5669e94b7af9b0fac5fe1a9e0cf45fbad3"
 
     define_method(:install) do
       bin.install "tart-guest-agent"
@@ -19,15 +19,15 @@ class TartGuestAgent < Formula
 
   on_linux do
     if Hardware::CPU.intel? && Hardware::CPU.is_64_bit?
-      url "https://github.com/openai/tart-guest-agent/releases/download/v0.13.0/tart-guest-agent-linux-amd64.tar.gz"
-      sha256 "ab279befb0b03d963b4b1bcdf416d581a6c71cc218f9bab3541c4fdddf8c2df1"
+      url "https://github.com/openai/tart-guest-agent/releases/download/v0.13.1/tart-guest-agent-linux-amd64.tar.gz"
+      sha256 "210e6bb20b22fdc77069e809a6d5fd6b6fc3775a5d147642df38ad59aea6eb0e"
       define_method(:install) do
         bin.install "tart-guest-agent"
       end
     end
     if Hardware::CPU.arm? && Hardware::CPU.is_64_bit?
-      url "https://github.com/openai/tart-guest-agent/releases/download/v0.13.0/tart-guest-agent-linux-arm64.tar.gz"
-      sha256 "0829ceb3f29d828749f0aa6133b54eeefbc3aecfbf1de5adff7f128f3ec30309"
+      url "https://github.com/openai/tart-guest-agent/releases/download/v0.13.1/tart-guest-agent-linux-arm64.tar.gz"
+      sha256 "27adb2b3ff014f761fbdc3f514fa191defce079f525913f137add2eeded966a7"
       define_method(:install) do
         bin.install "tart-guest-agent"
       end
