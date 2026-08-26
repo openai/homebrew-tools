@@ -5,29 +5,29 @@
 class TunnelClient < Formula
   desc "Customer-run agent for Secure MCP Tunnel"
   homepage "https://github.com/openai/tunnel-client"
-  version "0.0.12"
+  version "0.0.13"
   license "Apache-2.0"
 
   on_macos do
     on_intel do
       url "https://persistent.oaistatic.com/tunnel-client/v#{version}/tunnel-client-v#{version}-darwin-amd64.zip"
-      sha256 "33de53aec680faafedc795f8f8268d6861577bddb871cb2d49529c91f88c2009"
+      sha256 "c683e15d84fb997f5af1cc7c4cb55008e19a555a9ed2ec0f89a5ff426d85f85c"
     end
     on_arm do
       url "https://persistent.oaistatic.com/tunnel-client/v#{version}/tunnel-client-v#{version}-darwin-arm64.zip"
-      sha256 "42fb3138dc9c081d5777cb7e8bd1e041cc48b67c4978dbab3c5167ca1aabca02"
+      sha256 "15abf165f06050af642c948ba6bd6c905191dc5420a9422dadde2b49d892e2c6"
     end
   end
 
   on_linux do
     on_intel do
       url "https://persistent.oaistatic.com/tunnel-client/v#{version}/tunnel-client-v#{version}-linux-amd64.zip"
-      sha256 "2bb693bd7b5cd28da7ce09cd9e309529dbb33b7cc9dc0058e62a064688f92c81"
+      sha256 "e71f37b424126513173d5e3590687c0b5ccf6e8ef3fba900104d1f8c60dad906"
     end
     on_arm do
       if Hardware::CPU.is_64_bit?
         url "https://persistent.oaistatic.com/tunnel-client/v#{version}/tunnel-client-v#{version}-linux-arm64.zip"
-        sha256 "6813878a3edb82ebebb32fe5a859bc6327a81cce5bc7b635a2313174d26365d6"
+        sha256 "9d214a805bec213a3a156dc2a4460a6dfe2f35b0c00ba20609d002bf5e6469f8"
       end
     end
   end
