@@ -52,13 +52,19 @@ jobs:
             tart-guest-agent-*) expected_path="Formula/tart-guest-agent.rb" ;;
             tart-*) expected_path="Formula/tart.rb" ;;
             *)
-              echo "Unexpected GoReleaser branch: ${VALIDATED_HEAD_BRANCH}"
-              exit 1
+              echo "Skipping non-GoReleaser branch: ${VALIDATED_HEAD_BRANCH}"
+              exit 0
               ;;
           esac
 
           data="$(gh pr view "${PR_NUMBER}" --repo "${REPO}" \
             --json author,baseRefName,body,files,headRefName,headRefOid,headRepositoryOwner,isCrossRepository,isDraft,state,statusCheckRollup)"
+
+          author="$(echo "${data}" | jq -er '.author.login')"
+          if [ "${author}" != "app/openai-homebrew-releaser" ]; then
+            echo "Skipping PR not authored by the GoReleaser app."
+            exit 0
+          fi
 
           echo "${data}" | jq -e \
             --arg sha "${VALIDATED_SHA}" \
@@ -99,6 +105,7 @@ jobs:
   automerge:
     name: Auto-merge trusted GoReleaser PR
     needs: verify
+    if: needs.verify.outputs.pr-number != ''
     runs-on: ubuntu-latest
     environment: goreleaser-automerge
     permissions:
