@@ -112,7 +112,7 @@ jobs:
           app-id: ${{ secrets.RELEASE_APP_ID }}
           private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
 
-      - name: Squash merge PR
+      - name: Enable auto-merge after required reviews
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
           PR_NUMBER: ${{ needs.verify.outputs.pr-number }}
@@ -124,6 +124,6 @@ jobs:
           gh pr merge "${PR_NUMBER}" \
             --repo "${REPO}" \
             --squash \
-            --admin \
+            --auto \
             --delete-branch \
             --match-head-commit "${VALIDATED_SHA}"

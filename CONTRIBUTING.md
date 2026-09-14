@@ -120,6 +120,13 @@ Keep PRs focused and explain the problem, affected recipes/platforms, upstream
 generation changes, validation, and remaining uncertainty. Tap-owned guidance,
 workflows, and the validator are maintained here.
 [CODEOWNERS](.github/CODEOWNERS) assigns this repository to `@openai/sdks-team`.
+
+Generated release recipe updates require code-owner approval before merging into
+`main`. After validation, the GoReleaser workflow enables normal auto-merge;
+GitHub waits for required reviews and checks. The release app and SDK team must
+not bypass the review rule. Upstream binaries are already published at this
+point, so this approval governs their availability through the Homebrew tap.
+
 Request maintainer security review for sensitive recipe, workflow, and publishing
 changes, including:
 
