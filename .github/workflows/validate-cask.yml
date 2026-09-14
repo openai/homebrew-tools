@@ -39,3 +39,6 @@ jobs:
 
       - name: Validate generated recipe structure
         run: ruby scripts/validate_recipes.rb
+
+      - name: Test auto-merge eligibility
+        run: ruby scripts/test_auto_merge.rb
