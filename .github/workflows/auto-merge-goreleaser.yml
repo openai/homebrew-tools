@@ -121,6 +121,9 @@ jobs:
         run: |
           set -euo pipefail
 
+          # The SHA guards enrollment only. Later pushes may retain auto-merge;
+          # required code-owner review, stale-review dismissal, and checks must
+          # remain enforced without app/team bypasses (see CONTRIBUTING.md).
           gh pr merge "${PR_NUMBER}" \
             --repo "${REPO}" \
             --squash \

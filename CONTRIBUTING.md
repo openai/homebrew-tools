@@ -127,6 +127,18 @@ GitHub waits for required reviews and checks. The release app and SDK team must
 not bypass the review rule. Upstream binaries are already published at this
 point, so this approval governs their availability through the Homebrew tap.
 
+Maintainer decision (2026-09-14): accept GitHub's native auto-merge behavior for
+this tap. The workflow's exact-head and single-recipe checks govern enabling
+auto-merge, not the eventual merge. `--match-head-commit` does not permanently
+pin an enabled auto-merge request; later pushes by a writer can keep it enabled,
+even if the updated PR no longer meets the workflow's single-recipe allowlist.
+Safety therefore relies on CODEOWNERS covering every file, required code-owner
+approval, dismissal of stale approvals on new commits, required validation, and
+no release-app or SDK-team review bypass. Reviewers must inspect the complete
+current diff, including changes beyond the generated recipe. Disable this
+automation if those protections cannot be maintained. This decision permits
+auto-merge to follow reviewed updates; it does not permit merging without review.
+
 Request maintainer security review for sensitive recipe, workflow, and publishing
 changes, including:
 
