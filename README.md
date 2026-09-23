@@ -23,6 +23,13 @@ brew install openai/tools/orchard
 brew install openai/tools/tart-guest-agent
 ```
 
+## Contributing
+
+Please share bug reports and feature requests through [GitHub issues](https://github.com/openai/homebrew-tools/issues).
+Pull requests are limited to repository collaborators; we do not accept pull requests from non-collaborators.
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for the contribution policy and development guide.
+For security vulnerabilities, follow [SECURITY.md](SECURITY.md).
+
 ## License
 
 Copyright 2026 OpenAI
