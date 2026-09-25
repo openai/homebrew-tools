@@ -15,7 +15,7 @@ class AutoMergeTest < Minitest::Test
       author: { login: "app/openai-homebrew-releaser" },
       baseRefName: "main", body: "Automated with [GoReleaser]",
       files: [{ path: "Casks/openai.rb", changeType: "MODIFIED" }],
-      headRefName: "openai-1.2.3", headRefOid: "a" * 40,
+      headRefName: "openai-update", headRefOid: "a" * 40,
       headRepositoryOwner: { login: "openai" },
       isCrossRepository: false, isDraft: false, state: "OPEN",
       statusCheckRollup: [{ __typename: "CheckRun", workflowName: "Validate cask",
@@ -41,6 +41,17 @@ class AutoMergeTest < Minitest::Test
       @pr[:headRefName] = "#{tool}-1.2.3"
       @pr[:files][0][:path] = path
       assert_result(:merge, branch: @pr[:headRefName], diff: path)
+    end
+  end
+
+  def test_reusable_openai_branch_is_eligible
+    assert_result(:merge)
+  end
+
+  def test_other_non_versioned_release_branches_are_rejected
+    ["openai-update-extra", "openai-other", "orchard-update", "tart-update"].each do |branch|
+      @pr[:headRefName] = branch
+      assert_result(:fail, branch: branch)
     end
   end
 
@@ -79,7 +90,7 @@ class AutoMergeTest < Minitest::Test
 
   private
 
-  def assert_result(expected, branch: "openai-1.2.3", diff: "Casks/openai.rb", api_status: "0", number: "123")
+  def assert_result(expected, branch: "openai-update", diff: "Casks/openai.rb", api_status: "0", number: "123")
     Dir.mktmpdir("homebrew-automerge-test") do |directory|
       fixture = File.join(directory, "pr.json")
       output = File.join(directory, "output")
