@@ -76,7 +76,7 @@ jobs:
               .author.login == "app/openai-homebrew-releaser" and
               .baseRefName == "main" and
               .headRefName == $head_branch and
-              (.headRefName | test("^(openai|orchard|softnet|tart|tart-guest-agent)-[0-9]+\\.[0-9]+\\.[0-9]+$")) and
+              (.headRefName | test("^(openai-update|(openai|orchard|softnet|tart|tart-guest-agent)-[0-9]+\\.[0-9]+\\.[0-9]+)$")) and
               .headRefOid == $sha and
               .headRepositoryOwner.login == "openai" and
               .isCrossRepository == false and

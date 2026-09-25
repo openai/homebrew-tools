@@ -57,6 +57,14 @@ The CLI's application generation and its GoReleaser cask generation are separate
 concerns. Do not assume the other projects use the CLI's generator. Headers alone
 do not verify upstream release controls or provenance.
 
+The CLI publisher uses the `openai-update` branch to update one pending cask PR
+as new versions are released. Its PR title is version-independent; check the
+current recipe diff for the version under review. Keep the tap's automatic branch
+deletion setting enabled so the next update starts from `main` after a merge.
+Legacy versioned branches
+remain eligible during the transition. Merge this tap's branch-allowlist support
+before switching the upstream CLI publisher to the reusable branch.
+
 ## Release artifacts
 
 Use the existing source for each recipe update:
