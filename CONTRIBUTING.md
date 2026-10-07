@@ -146,7 +146,7 @@ generation changes, validation, and remaining uncertainty. Tap-owned guidance,
 workflows, and the validator are maintained here.
 [CODEOWNERS](.github/CODEOWNERS) assigns this repository to `@openai/sdks-team`.
 
-Generated release recipe updates require code-owner approval before merging into
+Generated GoReleaser recipe updates require code-owner approval before merging into
 `main`. After validation, the GoReleaser workflow enables normal auto-merge;
 GitHub waits for required reviews and checks. The release app and SDK team must
 not bypass the review rule. Upstream binaries are already published at this
@@ -163,6 +163,37 @@ no release-app or SDK-team review bypass. Reviewers must inspect the complete
 current diff, including changes beyond the generated recipe. Disable this
 automation if those protections cannot be maintained. This decision permits
 auto-merge to follow reviewed updates; it does not permit merging without review.
+
+### Tunnel Client publication exception
+
+Maintainer decision (2026-10-07): Tunnel Client Formula changes are reviewed in
+its upstream source of truth and published by Copyberry without a second tap
+approval or waiting for destination checks. Copyberry creates an audit PR for
+each Formula-changing source commit and fast-forwards `main` to the verified PR
+head. This exception does not change the GoReleaser review policy above.
+
+The active generated-branch ruleset restricts creation, updates, force updates,
+and deletion of `copyberry/tunnel-client-homebrew-formula/**` to the Copyberry
+GitHub App. That App has an Always-allow exception to the tap's review and
+validation rules. A separate rule prohibits force pushes and deletion of `main`
+without bypass actors. Other actors remain subject to the existing review and
+check requirements.
+
+This is an explicit trust decision: GitHub's App bypass on `main` is not limited
+to a source branch or file. The single-file publication boundary depends on
+Copyberry verifying the source revision, `Formula/tunnel-client.rb` diff, blob,
+mode, provenance trailer, PR identity, and current destination base before a
+non-force fast-forward. Protect the publisher's credentials and upstream review
+controls accordingly. Destination CI still runs after publication; it is not a
+publication gate for this route.
+
+Before activating or resuming the route, the publisher owner must verify the
+worker deployment and source/destination checkpoint, including any manual Formula
+updates. Reconcile unknown Formula edits before resuming; do not fabricate
+provenance, force-push `main`, or blindly replay old events. Verify the generated
+branch restrictions and a complete automated publication through the publisher's
+rollout process. If verification fails, pause this route and coordinate recovery
+with its owner.
 
 Request maintainer security review for sensitive recipe, workflow, and publishing
 changes, including:
