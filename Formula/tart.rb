@@ -5,14 +5,14 @@
 class Tart < Formula
   desc "Run macOS and Linux VMs on Apple Hardware"
   homepage "https://github.com/openai/tart"
-  version "2.40.1"
+  version "2.41.0"
   license "FSL-1.1-ALv2"
 
   depends_on "openai/tools/softnet"
   depends_on :macos
 
-  url "https://github.com/openai/tart/releases/download/2.40.1/tart.tar.gz"
-  sha256 "363e2701154a8155cbc1bb6d845430c9b42697d2a186bc49574471ca2877db46"
+  url "https://github.com/openai/tart/releases/download/2.41.0/tart.tar.gz"
+  sha256 "07faafc77acc668fcfb2fbe97811622567fb89c650db401a470f72e7c4ddc560"
 
   define_method(:install) do
     libexec.install Dir["*"]
