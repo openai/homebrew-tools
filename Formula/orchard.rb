@@ -5,12 +5,12 @@
 class Orchard < Formula
   desc "Orchestrator for running Tart Virtual Machines on a cluster of Apple Silicon devices"
   homepage "https://github.com/openai/orchard"
-  version "0.57.0"
+  version "0.58.0"
 
   on_macos do
     if Hardware::CPU.intel?
-      url "https://github.com/openai/orchard/releases/download/0.57.0/orchard-darwin-amd64.tar.gz"
-      sha256 "b93202610373e1e0f4342ad7e03820e5d74a7891e92cf7532effce2a16b4d256"
+      url "https://github.com/openai/orchard/releases/download/0.58.0/orchard-darwin-amd64.tar.gz"
+      sha256 "c25a3303b6f19646fb5f5108d30050a50450b1030d2f126ffba3778c3e4c834a"
 
       define_method(:install) do
         bin.install "orchard"
@@ -18,8 +18,8 @@ class Orchard < Formula
       end
     end
     if Hardware::CPU.arm?
-      url "https://github.com/openai/orchard/releases/download/0.57.0/orchard-darwin-arm64.tar.gz"
-      sha256 "63b511cb9ba4ecadda947d70763b4a226f9f0d56422e147cbf2a2b9b2eeabd26"
+      url "https://github.com/openai/orchard/releases/download/0.58.0/orchard-darwin-arm64.tar.gz"
+      sha256 "aa912db4d47d93413dabfd34c856c6ebb124e09d13fba70b5a62467276a1a71d"
 
       define_method(:install) do
         bin.install "orchard"
@@ -30,16 +30,16 @@ class Orchard < Formula
 
   on_linux do
     if Hardware::CPU.intel? && Hardware::CPU.is_64_bit?
-      url "https://github.com/openai/orchard/releases/download/0.57.0/orchard-linux-amd64.tar.gz"
-      sha256 "8e54692d5d38eac228b63fc16f0e801c4d7335287b9f1922743e0ac6e4c382d5"
+      url "https://github.com/openai/orchard/releases/download/0.58.0/orchard-linux-amd64.tar.gz"
+      sha256 "55370716a7e5ad86643a9829afbdf99b57e0cc957bb7dcef2a8a2acd44b97051"
       define_method(:install) do
         bin.install "orchard"
         generate_completions_from_executable(bin/"orchard", "completion")
       end
     end
     if Hardware::CPU.arm? && Hardware::CPU.is_64_bit?
-      url "https://github.com/openai/orchard/releases/download/0.57.0/orchard-linux-arm64.tar.gz"
-      sha256 "5c744e2883ff02b3e3e42b9ecaa42922411843653ea708eb7e37ee393c945d1f"
+      url "https://github.com/openai/orchard/releases/download/0.58.0/orchard-linux-arm64.tar.gz"
+      sha256 "00bb625c177049cb052d68ebb1992da89e1b09da2f8b516fc0b6009e45d5fddf"
       define_method(:install) do
         bin.install "orchard"
         generate_completions_from_executable(bin/"orchard", "completion")
