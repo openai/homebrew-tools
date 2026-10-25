@@ -34,6 +34,9 @@ jobs:
       - name: Tap local repository
         run: brew tap openai/tools "$GITHUB_WORKSPACE"
 
+      - name: Trust local tap
+        run: brew trust --tap openai/tools
+
       - name: Check Homebrew can load the tap
         run: brew readall openai/tools
 

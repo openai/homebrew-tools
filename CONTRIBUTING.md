@@ -117,11 +117,13 @@ ruby scripts/validate_recipes.rb
 git diff --check
 ```
 
-After reviewing recipe code, use a disposable Homebrew environment with no
-existing `openai/tools` tap to check that Homebrew can load it:
+After reviewing recipe code, use Homebrew 6 or newer in a disposable environment
+with no existing `openai/tools` tap. Explicitly trust the local tap so
+`brew readall` loads its Formulae and Casks:
 
 ```sh
 brew tap openai/tools "$PWD"
+brew trust --tap openai/tools
 brew readall openai/tools
 ```
 

@@ -29,6 +29,10 @@ class AutoMergeTest < Minitest::Test
     end
   end
 
+  def test_unrelated_branch_without_pr_context_skips
+    assert_result(:skip, branch: "contributor/update-docs", number: "", api_status: "1")
+  end
+
   def test_ordinary_author_with_release_branch_name_skips
     @pr[:author][:login] = "contributor"
     assert_result(:skip)

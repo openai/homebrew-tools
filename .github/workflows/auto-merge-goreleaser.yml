@@ -40,11 +40,6 @@ jobs:
         run: |
           set -euo pipefail
 
-          if [ -z "${PR_NUMBER}" ]; then
-            echo "No pull request was attached to this workflow_run event."
-            exit 1
-          fi
-
           case "${VALIDATED_HEAD_BRANCH}" in
             openai-*) expected_path="Casks/openai.rb" ;;
             orchard-*) expected_path="Formula/orchard.rb" ;;
@@ -56,6 +51,11 @@ jobs:
               exit 0
               ;;
           esac
+
+          if [ -z "${PR_NUMBER}" ]; then
+            echo "No pull request was attached to this workflow_run event."
+            exit 1
+          fi
 
           data="$(gh pr view "${PR_NUMBER}" --repo "${REPO}" \
             --json author,baseRefName,body,files,headRefName,headRefOid,headRepositoryOwner,isCrossRepository,isDraft,state,statusCheckRollup)"
