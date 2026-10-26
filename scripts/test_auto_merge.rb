@@ -101,38 +101,97 @@ class AutoMergeTest < Minitest::Test
     [wait, merge].each do |step|
       assert_equal "${{ needs.verify.outputs.pr-number }}", step.fetch("env").fetch("PR_NUMBER")
     end
-    assert_equal "${{ github.event.workflow_run.head_sha }}", merge.fetch("env").fetch("VALIDATED_SHA")
+    [wait, merge].each do |step|
+      assert_equal "${{ github.event.workflow_run.head_sha }}", step.fetch("env").fetch("VALIDATED_SHA")
+    end
 
-    # A failed check, API error, or pending result must never reach the merge.
-    [0, 1, 8].each do |check_status|
-      Dir.mktmpdir("homebrew-merge-test") do |directory|
-        arguments = File.join(directory, "arguments.jsonl")
-        env = { "PR_NUMBER" => "123", "REPO" => "example/tap", "VALIDATED_SHA" => "a" * 40,
-                "MERGE_ARGUMENTS" => arguments, "CHECK_STATUS" => check_status.to_s, "GH_TOKEN" => "" }
-        stub = <<~'BASH'
-          gh() {
-            ruby -rjson -e 'File.open(ENV.fetch("MERGE_ARGUMENTS"), "a") { |f| f.puts(JSON.generate(ARGV)) }' -- "$@"
-            case "$1 $2" in
-              "pr checks") return "$CHECK_STATUS" ;;
-              "pr merge") return 0 ;;
-              *) return 99 ;;
-            esac
-          }
-        BASH
-        stdout, stderr, status = Open3.capture3(env, "bash", "-c", stub + wait.fetch("run") + "\n" + merge.fetch("run"))
-        assert_equal check_status.zero?, status.success?, "#{stdout}\n#{stderr}"
-        expected = [["pr", "checks", "123", "--repo", "example/tap",
-                     "--required", "--watch", "--fail-fast", "--interval", "10"]]
-        if check_status.zero?
-          expected << ["pr", "merge", "123", "--repo", "example/tap", "--squash", "--admin",
-                       "--delete-branch", "--match-head-commit", "a" * 40]
-        end
-        assert_equal expected, File.readlines(arguments).map { |line| JSON.parse(line) }
-      end
+    [0, 1, 8].each { |check_status| assert_merge_result(["SUCCESS"], check_status: check_status) }
+  end
+
+  def test_codeql_can_register_after_validation_and_finish_later
+    assert_merge_result([nil, "QUEUED", "IN_PROGRESS", "SKIPPED", "SUCCESS"])
+  end
+
+  def test_failed_or_cancelled_codeql_stops_without_merging
+    ["FAILURE", "CANCELLED", "TIMED_OUT"].each do |conclusion|
+      assert_merge_result([conclusion], checks_attempted: false)
     end
   end
 
+  def test_changed_head_while_waiting_stops_without_merging
+    assert_merge_result([nil, "SUCCESS"], heads: ["a" * 40, "b" * 40], checks_attempted: false)
+  end
+
+  def test_check_snapshot_api_error_stops_without_merging
+    assert_merge_result(["SUCCESS"], api_status: "1", checks_attempted: false)
+  end
+
   private
+
+  def assert_merge_result(codeql_states, check_status: 0, heads: nil, api_status: "0", checks_attempted: true)
+    steps = WORKFLOW.fetch("jobs").fetch("automerge").fetch("steps")
+    wait, _, merge = steps
+    Dir.mktmpdir("homebrew-merge-test") do |directory|
+      arguments = File.join(directory, "arguments.jsonl")
+      snapshots = File.join(directory, "snapshots.jsonl")
+      counter = File.join(directory, "counter")
+      rows = codeql_states.each_with_index.map do |state, index|
+        checks = @pr.fetch(:statusCheckRollup).dup
+        unless state.nil?
+          pending = ["QUEUED", "IN_PROGRESS"].include?(state)
+          checks << { __typename: "CheckRun", name: "CodeQL", status: pending ? state : "COMPLETED",
+                      conclusion: pending ? nil : state }
+        end
+        { headRefOid: heads ? heads[index] : "a" * 40, statusCheckRollup: checks }
+      end
+      File.write(snapshots, rows.map { |row| JSON.generate(row) }.join("\n"))
+      env = { "PR_NUMBER" => "123", "REPO" => "example/tap", "VALIDATED_SHA" => "a" * 40,
+              "MERGE_ARGUMENTS" => arguments, "CHECK_STATUS" => check_status.to_s, "GH_TOKEN" => "",
+              "SNAPSHOTS" => snapshots, "COUNTER" => counter, "API_STATUS" => api_status }
+      stub = <<~'BASH'
+        record() {
+          ruby -rjson -e 'File.open(ENV.fetch("MERGE_ARGUMENTS"), "a") { |f| f.puts(JSON.generate(ARGV)) }' -- "$@"
+        }
+        gh() {
+          record "$@"
+          case "$1 $2" in
+            "pr view")
+              if [ "$API_STATUS" != "0" ]; then return "$API_STATUS"; fi
+              ruby -e '
+                counter = ENV.fetch("COUNTER")
+                index = File.exist?(counter) ? File.read(counter).to_i : 0
+                rows = File.readlines(ENV.fetch("SNAPSHOTS"))
+                exit 95 if index >= rows.length
+                File.write(counter, index + 1)
+                print rows[index]
+              '
+              ;;
+            "pr checks") return "$CHECK_STATUS" ;;
+            "pr merge") return 0 ;;
+            *) return 99 ;;
+          esac
+        }
+        sleep() { record sleep "$@"; }
+      BASH
+      stdout, stderr, status = Open3.capture3(env, "bash", "-c", stub + wait.fetch("run") + "\n" + merge.fetch("run"))
+      merge_expected = checks_attempted && check_status.zero?
+      assert_equal merge_expected, status.success?, "#{stdout}\n#{stderr}"
+      expected = []
+      codeql_states.each_index do |index|
+        expected << ["pr", "view", "123", "--repo", "example/tap", "--json", "headRefOid,statusCheckRollup"]
+        expected << ["sleep", "10"] if index < codeql_states.length - 1
+      end
+      if checks_attempted
+        expected << ["pr", "checks", "123", "--repo", "example/tap",
+                     "--required", "--watch", "--fail-fast", "--interval", "10"]
+      end
+      if merge_expected
+        expected << ["pr", "merge", "123", "--repo", "example/tap", "--squash", "--admin",
+                     "--delete-branch", "--match-head-commit", "a" * 40]
+      end
+      assert_equal expected, File.readlines(arguments).map { |line| JSON.parse(line) }
+    end
+  end
 
   def assert_result(expected, branch: "openai-update", diff: "Casks/openai.rb", api_status: "0", number: "123")
     Dir.mktmpdir("homebrew-automerge-test") do |directory|

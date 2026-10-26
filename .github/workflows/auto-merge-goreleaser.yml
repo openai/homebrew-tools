@@ -121,11 +121,30 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ needs.verify.outputs.pr-number }}
           REPO: ${{ github.repository }}
+          VALIDATED_SHA: ${{ github.event.workflow_run.head_sha }}
         run: |
           set -euo pipefail
 
-          # CodeQL can finish after cask validation. Wait with a read-only token;
-          # fail closed if any required check fails.
+          # --watch only waits for checks already registered. CodeQL may not
+          # exist yet, so poll for its successful completion at the validated head.
+          while true; do
+            data="$(gh pr view "${PR_NUMBER}" --repo "${REPO}" --json headRefOid,statusCheckRollup)"
+            echo "${data}" | jq -e --arg sha "${VALIDATED_SHA}" '.headRefOid == $sha' > /dev/null
+            codeql="$(echo "${data}" | jq -r '
+              [.statusCheckRollup[]? | select(.__typename == "CheckRun" and .name == "CodeQL")] |
+              if any(.[]; .status == "COMPLETED" and
+                (.conclusion | IN("FAILURE", "CANCELLED", "TIMED_OUT", "ACTION_REQUIRED", "STARTUP_FAILURE", "STALE")))
+              then "failed"
+              elif any(.[]; .status == "COMPLETED" and .conclusion == "SUCCESS") then "success"
+              else "pending" end
+            ')"
+            case "${codeql}" in
+              success) break ;;
+              failed) echo "Required CodeQL check failed."; exit 1 ;;
+              pending) echo "Waiting for CodeQL to appear and succeed."; sleep 10 ;;
+            esac
+          done
+
           gh pr checks "${PR_NUMBER}" --repo "${REPO}" \
             --required --watch --fail-fast --interval 10
 

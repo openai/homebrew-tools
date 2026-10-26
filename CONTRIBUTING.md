@@ -151,11 +151,12 @@ allowlisted GoReleaser recipe updates, superseding the 2026-09-14 review policy
 from [PR #66](https://github.com/openai/homebrew-tools/pull/66). After successful
 validation, the workflow verifies the release app author, same-repository PR,
 release branch, single expected recipe, and current head. It waits up to 20
-minutes for remaining required checks (including CodeQL), then attempts a
+minutes for CodeQL to appear and succeed and for all remaining required checks,
+then attempts a
 squash merge with `--admin --match-head-commit`. It does not enable a persistent
 auto-merge request for later commits. Failed checks or a timeout stop the job;
-rerun the failed workflow after resolving the cause. Upstream binaries are already published;
-this automation makes their recipes available through the Homebrew tap.
+rerun the failed workflow after resolving the cause. Upstream binaries are already
+published; this automation makes their recipes available through the Homebrew tap.
 
 Configure the `openai-homebrew-releaser` GitHub App as a pull-request-only bypass
 actor on the `main: pull request review` ruleset. Keep the separate required cask
@@ -168,6 +169,13 @@ a branch or file. The single-recipe boundary depends on the trusted default-bran
 workflow's eligibility checks, protected `goreleaser-automerge` environment, and
 release-app credentials. The privileged workflow must never check out or execute
 PR code. Preserve these controls when changing release automation.
+
+The release app and upstream release producers are trusted to supply executable
+recipes and binaries. Structural validation and CodeQL are not an exact-template
+or Ruby AST allowlist and do not establish publisher provenance. Unattended
+merging therefore accepts the risk of a compromised trusted publisher; these
+checks do not make that publisher's arbitrary recipe code safe. This policy
+restores publisher trust rather than a second manual review in this tap.
 
 ### Tunnel Client publication exception
 
