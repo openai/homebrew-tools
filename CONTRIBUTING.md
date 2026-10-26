@@ -146,23 +146,28 @@ generation changes, validation, and remaining uncertainty. Tap-owned guidance,
 workflows, and the validator are maintained here.
 [CODEOWNERS](.github/CODEOWNERS) assigns this repository to `@openai/sdks-team`.
 
-Generated GoReleaser recipe updates require code-owner approval before merging into
-`main`. After validation, the GoReleaser workflow enables normal auto-merge;
-GitHub waits for required reviews and checks. The release app and SDK team must
-not bypass the review rule. Upstream binaries are already published at this
-point, so this approval governs their availability through the Homebrew tap.
+Maintainer decision (2026-10-26): restore unattended merging for the five
+allowlisted GoReleaser recipe updates, superseding the 2026-09-14 review policy
+from [PR #66](https://github.com/openai/homebrew-tools/pull/66). After successful
+validation, the workflow verifies the release app author, same-repository PR,
+release branch, single expected recipe, and current head. It waits up to 20
+minutes for remaining required checks (including CodeQL), then attempts a
+squash merge with `--admin --match-head-commit`. It does not enable a persistent
+auto-merge request for later commits. Failed checks or a timeout stop the job;
+rerun the failed workflow after resolving the cause. Upstream binaries are already published;
+this automation makes their recipes available through the Homebrew tap.
 
-Maintainer decision (2026-09-14): accept GitHub's native auto-merge behavior for
-this tap. The workflow's exact-head and single-recipe checks govern enabling
-auto-merge, not the eventual merge. `--match-head-commit` does not permanently
-pin an enabled auto-merge request; later pushes by a writer can keep it enabled,
-even if the updated PR no longer meets the workflow's single-recipe allowlist.
-Safety therefore relies on CODEOWNERS covering every file, required code-owner
-approval, dismissal of stale approvals on new commits, required validation, and
-no release-app or SDK-team review bypass. Reviewers must inspect the complete
-current diff, including changes beyond the generated recipe. Disable this
-automation if those protections cannot be maintained. This decision permits
-auto-merge to follow reviewed updates; it does not permit merging without review.
+Configure the `openai-homebrew-releaser` GitHub App as a pull-request-only bypass
+actor on the `main: pull request review` ruleset. Keep the separate required cask
+validation, CodeQL, and history/deletion protections enforced for this app. Do
+not restore an SDK-team bypass. Other PRs continue to require code-owner approval
+and checks.
+
+This is an explicit trust decision: GitHub's App review bypass is not limited to
+a branch or file. The single-recipe boundary depends on the trusted default-branch
+workflow's eligibility checks, protected `goreleaser-automerge` environment, and
+release-app credentials. The privileged workflow must never check out or execute
+PR code. Preserve these controls when changing release automation.
 
 ### Tunnel Client publication exception
 
@@ -170,7 +175,7 @@ Maintainer decision (2026-10-07): Tunnel Client Formula changes are reviewed in
 its upstream source of truth and published by Copyberry without a second tap
 approval or waiting for destination checks. Copyberry creates an audit PR for
 each Formula-changing source commit and fast-forwards `main` to the verified PR
-head. This exception does not change the GoReleaser review policy above.
+head. This exception is separate from the GoReleaser automation above.
 
 The active generated-branch ruleset restricts creation, updates, force updates,
 and deletion of `copyberry/tunnel-client-homebrew-formula/**` to the Copyberry

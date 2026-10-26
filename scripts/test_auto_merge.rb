@@ -88,6 +88,50 @@ class AutoMergeTest < Minitest::Test
     assert_equal "needs.verify.outputs.pr-number != ''", job.fetch("if")
   end
 
+  def test_merge_waits_for_required_checks_and_uses_the_validated_head
+    job = WORKFLOW.fetch("jobs").fetch("automerge")
+    assert_equal 20, job.fetch("timeout-minutes")
+    steps = job.fetch("steps")
+    assert_equal ["Wait for required checks", "Create GoReleaser app token", "Squash merge validated release PR"],
+                 steps.map { |entry| entry.fetch("name") }
+    wait, _, merge = steps
+    assert_equal "${{ github.token }}", wait.fetch("env").fetch("GH_TOKEN")
+    assert_equal "read", job.fetch("permissions").fetch("checks")
+    assert_equal "read", job.fetch("permissions").fetch("pull-requests")
+    [wait, merge].each do |step|
+      assert_equal "${{ needs.verify.outputs.pr-number }}", step.fetch("env").fetch("PR_NUMBER")
+    end
+    assert_equal "${{ github.event.workflow_run.head_sha }}", merge.fetch("env").fetch("VALIDATED_SHA")
+
+    # A failed check, API error, or pending result must never reach the merge.
+    [0, 1, 8].each do |check_status|
+      Dir.mktmpdir("homebrew-merge-test") do |directory|
+        arguments = File.join(directory, "arguments.jsonl")
+        env = { "PR_NUMBER" => "123", "REPO" => "example/tap", "VALIDATED_SHA" => "a" * 40,
+                "MERGE_ARGUMENTS" => arguments, "CHECK_STATUS" => check_status.to_s, "GH_TOKEN" => "" }
+        stub = <<~'BASH'
+          gh() {
+            ruby -rjson -e 'File.open(ENV.fetch("MERGE_ARGUMENTS"), "a") { |f| f.puts(JSON.generate(ARGV)) }' -- "$@"
+            case "$1 $2" in
+              "pr checks") return "$CHECK_STATUS" ;;
+              "pr merge") return 0 ;;
+              *) return 99 ;;
+            esac
+          }
+        BASH
+        stdout, stderr, status = Open3.capture3(env, "bash", "-c", stub + wait.fetch("run") + "\n" + merge.fetch("run"))
+        assert_equal check_status.zero?, status.success?, "#{stdout}\n#{stderr}"
+        expected = [["pr", "checks", "123", "--repo", "example/tap",
+                     "--required", "--watch", "--fail-fast", "--interval", "10"]]
+        if check_status.zero?
+          expected << ["pr", "merge", "123", "--repo", "example/tap", "--squash", "--admin",
+                       "--delete-branch", "--match-head-commit", "a" * 40]
+        end
+        assert_equal expected, File.readlines(arguments).map { |line| JSON.parse(line) }
+      end
+    end
+  end
+
   private
 
   def assert_result(expected, branch: "openai-update", diff: "Casks/openai.rb", api_status: "0", number: "123")

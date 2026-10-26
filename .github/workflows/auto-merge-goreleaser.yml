@@ -107,11 +107,28 @@ jobs:
     needs: verify
     if: needs.verify.outputs.pr-number != ''
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     environment: goreleaser-automerge
     permissions:
+      actions: read
+      checks: read
       contents: read
+      pull-requests: read
 
     steps:
+      - name: Wait for required checks
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ needs.verify.outputs.pr-number }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+
+          # CodeQL can finish after cask validation. Wait with a read-only token;
+          # fail closed if any required check fails.
+          gh pr checks "${PR_NUMBER}" --repo "${REPO}" \
+            --required --watch --fail-fast --interval 10
+
       - name: Create GoReleaser app token
         id: app-token
         uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
@@ -119,7 +136,7 @@ jobs:
           app-id: ${{ secrets.RELEASE_APP_ID }}
           private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
 
-      - name: Enable auto-merge after required reviews
+      - name: Squash merge validated release PR
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
           PR_NUMBER: ${{ needs.verify.outputs.pr-number }}
@@ -128,12 +145,12 @@ jobs:
         run: |
           set -euo pipefail
 
-          # The SHA guards enrollment only. Later pushes may retain auto-merge;
-          # required code-owner review, stale-review dismissal, and checks must
-          # remain enforced without app/team bypasses (see CONTRIBUTING.md).
+          # Merge immediately at the validated head; do not leave auto-merge
+          # enabled for a later, potentially ineligible commit. The release app
+          # bypasses review only; separate validation and CodeQL rules still apply.
           gh pr merge "${PR_NUMBER}" \
             --repo "${REPO}" \
             --squash \
-            --auto \
+            --admin \
             --delete-branch \
             --match-head-commit "${VALIDATED_SHA}"
