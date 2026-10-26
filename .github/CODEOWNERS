@@ -4,3 +4,8 @@
 * @openai/sdks-team
 .github/CODEOWNERS @openai/sdks-team
 .github/workflows/* @openai/sdks-team
+
+/Formula/orchard.rb @openai/sdks-team @openai/agent-infrastructure-team
+/Formula/softnet.rb @openai/sdks-team @openai/agent-infrastructure-team
+/Formula/tart-guest-agent.rb @openai/sdks-team @openai/agent-infrastructure-team
+/Formula/tart.rb @openai/sdks-team @openai/agent-infrastructure-team
