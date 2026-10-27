@@ -35,7 +35,7 @@ class TunnelClient < Formula
   def install
     libexec.install "tunnel-client", "cloudflared", "cloudflared-manifest.json"
     bin.write_exec_script libexec/"tunnel-client"
-    generate_completions_from_executable(bin/"tunnel-client", "completion")
+    generate_completions_from_executable(libexec/"tunnel-client", "completion")
   end
 
   service do

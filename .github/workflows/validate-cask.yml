@@ -42,3 +42,12 @@ jobs:
 
       - name: Test auto-merge eligibility
         run: ruby scripts/test_auto_merge.rb
+
+      - name: Install and test candidate Tunnel Client
+        env:
+          HOMEBREW_NO_AUTO_UPDATE: "1"
+        run: |
+          cmp Formula/tunnel-client.rb "$(brew --repository openai/tools)/Formula/tunnel-client.rb"
+          brew install openai/tools/tunnel-client
+          tunnel-client --version
+          brew test openai/tools/tunnel-client
