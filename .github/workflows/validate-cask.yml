@@ -45,3 +45,17 @@ jobs:
 
       - name: Test auto-merge eligibility
         run: ruby scripts/test_auto_merge.rb
+
+      - name: Install every tool from the tap
+        run: |
+          failed=0
+          for recipe in Formula/*.rb Casks/*.rb; do
+            tool="${recipe##*/}"
+            tool="${tool%.rb}"
+            echo "::group::brew install openai/tools/$tool"
+            if ! brew install "openai/tools/$tool"; then
+              failed=1
+            fi
+            echo "::endgroup::"
+          done
+          exit "$failed"

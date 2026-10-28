@@ -134,6 +134,12 @@ not count a check against that copy as validation of your change, or replace a
 contributor's existing tap just to run the check. Report when a clean environment
 is unavailable. CI checks its checked-out commit using these Homebrew commands.
 
+CI also runs `brew install openai/tools/<name>` for every Formula and Cask on
+its macOS runner. Each installation must succeed, including completion
+generation and post-install steps. This checks installation on the runner's
+macOS version and architecture; it does not test other platforms or start
+services, VMs, or tunnels.
+
 The structural validator checks expected headers, URLs, checksum shapes, and
 selected installation declarations. It does not download or hash release assets,
 validate signatures, scan bundled executables, or reject every possible Ruby
